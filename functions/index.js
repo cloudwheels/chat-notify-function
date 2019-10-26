@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 //admin.initializeApp();
 admin.initializeApp({
-    credential: admin.credential.cert(require('../service-account-key.json'))
+   // credential: admin.credential.cert(require('../service-account-key.json'))
 });
 
 exports.notifyParticipants = functions.firestore
@@ -10,10 +10,10 @@ exports.notifyParticipants = functions.firestore
     .onWrite(async (change, context) => {
         // Get an object with the current document value.
         // If the document does not exist, it has been deleted.
-        // const document = change.after.exists ? change.after.data() : null;
+         const document = change.after.exists ? change.after.data() : null;
         // console.log("document is: " + JSON.stringify(document))
         // Get an object with the previous document value (for update or delete)
-        // const oldDocument = change.before.data();
+         const oldDocument = change.before.data();
         // console.log("old document is: " + JSON.stringify(oldDocument));
 
    
@@ -31,16 +31,19 @@ exports.notifyParticipants = functions.firestore
                     //icon: follower.photoURL
                 }
             };
-
+            console.log("participants:", JSON.stringify(document.participants));
+            /*
             const userRefs = new Array();
             for (const userID of document.participants) {
-                console.log("aduserref:" + userID);
-                const ref = admin.firestore().collection('users').doc(userID);
-                //or for exisitng code - split the path at "/"
+               // splitUserId=userID.split("/")[1];
+               // console.log("aduserref:" + splitUserId);
+                
+                const ref = admin.firestore().collection(userID);//.doc(splitUserId);
                 userRefs.push(ref);
             }
+            */
             const tokens = new Array();
-            await admin.firestore().getAll(...userRefs).then(snapshots => {
+            await admin.firestore().getAll(...document.participants).then(snapshots => {
                 snapshots.forEach(async snapshot => {
                     // snapshot.data
                     console.log('data:' + JSON.stringify(snapshot.data()));
@@ -73,7 +76,3 @@ exports.notifyParticipants = functions.firestore
         else { console.log("messages didn't change"); }
 
     });
-
-
-
-
